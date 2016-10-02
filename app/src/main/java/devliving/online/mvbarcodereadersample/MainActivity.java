@@ -11,6 +11,7 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
 import devliving.online.mvbarcodereader.BarcodeCaptureActivity;
+import devliving.online.mvbarcodereader.MVBarcodeScanner;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -35,9 +36,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        Intent i = new Intent(this, BarcodeCaptureActivity.class);
-        i.putExtra(BarcodeCaptureActivity.AutoFocus, true);
-        startActivityForResult(i, REQ_CODE);
+        new MVBarcodeScanner.Builder().build()
+                .launchScanner(this, REQ_CODE);
+
     }
 
     @Override

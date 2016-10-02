@@ -19,6 +19,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
@@ -88,6 +89,28 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         postInvalidate();
     }
 
+    public boolean isPointInsideBarcode(float x, float y) {
+        Barcode barcode = mBarcode;
+        if (barcode != null) {
+            RectF rect = getViewBoundingBox(barcode);
+            Log.d("BARCODE", "rect: t: " + rect.top + ", l: " + rect.left + ", r: " + rect.right + ", b: " + rect.bottom +
+                    "/ x: " + x + ", y: " + y);
+            return rect.contains(x, y);
+        }
+
+        return false;
+    }
+
+    private RectF getViewBoundingBox(Barcode barcode) {
+        // Draws the bounding box around the barcode.
+        RectF rect = new RectF(barcode.getBoundingBox());
+        rect.left = translateX(rect.left);
+        rect.top = translateY(rect.top);
+        rect.right = translateX(rect.right);
+        rect.bottom = translateY(rect.bottom);
+
+        return rect;
+    }
     /**
      * Draws the barcode annotations for position, size, and raw value on the supplied canvas.
      */
@@ -99,11 +122,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         }
 
         // Draws the bounding box around the barcode.
-        RectF rect = new RectF(barcode.getBoundingBox());
-        rect.left = translateX(rect.left);
-        rect.top = translateY(rect.top);
-        rect.right = translateX(rect.right);
-        rect.bottom = translateY(rect.bottom);
+        RectF rect = getViewBoundingBox(barcode);
 
         canvas.drawRect(rect, mOverlayPaint);
 

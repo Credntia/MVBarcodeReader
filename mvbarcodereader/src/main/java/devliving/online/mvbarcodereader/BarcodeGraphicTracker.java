@@ -30,10 +30,18 @@ import devliving.online.mvbarcodereader.camera.GraphicOverlay;
 class BarcodeGraphicTracker extends Tracker<Barcode> {
     private GraphicOverlay<BarcodeGraphic> mOverlay;
     private BarcodeGraphic mGraphic;
+    private BarcodeDetectionListener mListener = null;
 
     BarcodeGraphicTracker(GraphicOverlay<BarcodeGraphic> overlay, BarcodeGraphic graphic) {
         mOverlay = overlay;
         mGraphic = graphic;
+    }
+
+    BarcodeGraphicTracker(GraphicOverlay<BarcodeGraphic> overlay, BarcodeGraphic graphic,
+                          BarcodeDetectionListener listener) {
+        this(overlay, graphic);
+
+        mListener = listener;
     }
 
     /**
@@ -70,5 +78,9 @@ class BarcodeGraphicTracker extends Tracker<Barcode> {
     @Override
     public void onDone() {
         mOverlay.remove(mGraphic);
+    }
+
+    interface BarcodeDetectionListener {
+        void onNewBarcodeDetected(int id, Barcode barcode);
     }
 }
