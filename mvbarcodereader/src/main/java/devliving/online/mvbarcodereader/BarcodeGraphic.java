@@ -30,18 +30,22 @@ import devliving.online.mvbarcodereader.camera.GraphicOverlay;
  */
 public class BarcodeGraphic extends GraphicOverlay.Graphic {
 
+    final int STROKE_WIDTH = 16;
+    final int CORNER_WIDTH = 56;
+
     private int mId;
 
     private static final int COLOR_CHOICES[] = {
-            Color.BLUE,
-            Color.CYAN,
-            Color.GREEN
+            Color.parseColor("#fba549"),
+            Color.parseColor("#418bfa"),
+            Color.parseColor("#aafc7d"),
+            Color.parseColor("#8149fb")
     };
 
     private static int mCurrentColorIndex = 0;
 
-    private Paint mRectPaint;
-    private Paint mTextPaint;
+    private Paint mRectPaint, mOverlayPaint;
+
     private volatile Barcode mBarcode;
 
     BarcodeGraphic(GraphicOverlay overlay) {
@@ -53,11 +57,14 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         mRectPaint = new Paint();
         mRectPaint.setColor(selectedColor);
         mRectPaint.setStyle(Paint.Style.STROKE);
-        mRectPaint.setStrokeWidth(4.0f);
+        mRectPaint.setStrokeWidth(STROKE_WIDTH);
+        mRectPaint.setStrokeCap(Paint.Cap.ROUND);
+        mRectPaint.setStrokeJoin(Paint.Join.ROUND);
 
-        mTextPaint = new Paint();
-        mTextPaint.setColor(selectedColor);
-        mTextPaint.setTextSize(36.0f);
+        mOverlayPaint = new Paint();
+        mOverlayPaint.setStyle(Paint.Style.FILL);
+        mOverlayPaint.setColor(selectedColor);
+        mOverlayPaint.setAlpha(100);
     }
 
     public int getId() {
@@ -97,9 +104,31 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         rect.top = translateY(rect.top);
         rect.right = translateX(rect.right);
         rect.bottom = translateY(rect.bottom);
-        canvas.drawRect(rect, mRectPaint);
 
-        // Draws a label at the bottom of the barcode indicate the barcode value that was detected.
-        canvas.drawText(barcode.rawValue, rect.left, rect.bottom, mTextPaint);
+        canvas.drawRect(rect, mOverlayPaint);
+
+        /**
+         * Draw the top left corner
+         */
+        canvas.drawLine(rect.left, rect.top, rect.left + CORNER_WIDTH, rect.top, mRectPaint);
+        canvas.drawLine(rect.left, rect.top, rect.left, rect.top + CORNER_WIDTH, mRectPaint);
+
+        /**
+         * Draw the bottom left corner
+         */
+        canvas.drawLine(rect.left, rect.bottom, rect.left, rect.bottom - CORNER_WIDTH, mRectPaint);
+        canvas.drawLine(rect.left, rect.bottom, rect.left + CORNER_WIDTH, rect.bottom, mRectPaint);
+
+        /**
+         * Draw the top right corner
+         */
+        canvas.drawLine(rect.right, rect.top, rect.right - CORNER_WIDTH, rect.top, mRectPaint);
+        canvas.drawLine(rect.right, rect.top, rect.right, rect.top + CORNER_WIDTH, mRectPaint);
+
+        /**
+         * Draw the bottom right corner
+         */
+        canvas.drawLine(rect.right, rect.bottom, rect.right - CORNER_WIDTH, rect.bottom, mRectPaint);
+        canvas.drawLine(rect.right, rect.bottom, rect.right, rect.bottom - CORNER_WIDTH, mRectPaint);
     }
 }
