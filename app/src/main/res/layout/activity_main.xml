@@ -9,10 +9,29 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="devliving.online.mvbarcodereadersample.MainActivity">
 
+    <Spinner
+        android:id="@+id/scanner_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/scanner_modes"
+        android:layout_alignParentTop="true"
+        android:padding="8dp"
+        android:layout_centerHorizontal="true"></Spinner>
+
+    <EditText
+        android:id="@+id/barcode_types"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="false"
+        android:inputType="none"
+        android:clickable="false"
+        android:layout_below="@+id/scanner_mode"
+        android:layout_centerHorizontal="true" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/barcode_types"
         android:layout_above="@+id/scan">
 
         <TextView

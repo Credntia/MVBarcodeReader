@@ -1,16 +1,30 @@
 package devliving.online.mvbarcodereadersample;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
-import devliving.online.mvbarcodereader.BarcodeCaptureActivity;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import devliving.online.mvbarcodereader.MVBarcodeScanner;
 
 
@@ -20,8 +34,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     TextView result;
     Button scanButton;
+    EditText barcodeTypes;
+    Spinner modeSpinner;
+
+    MVBarcodeScanner.ScanningMode mMode = null;
+    @MVBarcodeScanner.BarCodeFormat
+    int[] mFormats = null;
 
     Barcode mBarcode;
+    List<Barcode> mBarcodes;
+
+    final static HashMap<Integer, String> TYPE_MAP;
+
+    static {
+        TYPE_MAP = new HashMap<>();
+
+        TYPE_MAP.put(Barcode.ALL_FORMATS, "All Formats");
+        TYPE_MAP.put(Barcode.AZTEC, "Aztec");
+        TYPE_MAP.put(Barcode.CALENDAR_EVENT, "Calendar Event");
+        TYPE_MAP.put(Barcode.CODABAR, "Codabar");
+        TYPE_MAP.put(Barcode.CODE_39, "Code 39");
+        TYPE_MAP.put(Barcode.CODE_93, "Code 93");
+        TYPE_MAP.put(Barcode.CODE_128, "Code 128");
+        TYPE_MAP.put(Barcode.CONTACT_INFO, "Contact Info");
+        TYPE_MAP.put(Barcode.DATA_MATRIX, "Data Matrix");
+        TYPE_MAP.put(Barcode.DRIVER_LICENSE, "Drivers License");
+        TYPE_MAP.put(Barcode.EAN_8, "EAN 8");
+        TYPE_MAP.put(Barcode.EAN_13, "EAN 13");
+        TYPE_MAP.put(Barcode.EMAIL, "Email");
+        TYPE_MAP.put(Barcode.GEO, "Geo");
+        TYPE_MAP.put(Barcode.ISBN, "ISBN");
+        TYPE_MAP.put(Barcode.ITF, "ITF");
+        TYPE_MAP.put(Barcode.PDF417, "PDF 417");
+        TYPE_MAP.put(Barcode.PHONE, "Phone");
+        TYPE_MAP.put(Barcode.QR_CODE, "QR Code");
+        TYPE_MAP.put(Barcode.PRODUCT, "Product");
+        TYPE_MAP.put(Barcode.SMS, "SMS");
+        TYPE_MAP.put(Barcode.UPC_A, "UPC A");
+        TYPE_MAP.put(Barcode.UPC_E, "UPC E");
+        TYPE_MAP.put(Barcode.TEXT, "Text");
+        TYPE_MAP.put(Barcode.URL, "URL");
+        TYPE_MAP.put(Barcode.WIFI, "WIFI");
+    }
+
+    String[] barcodeTypeItems = new String[TYPE_MAP.size()];
+    boolean[] checkedStates = new boolean[TYPE_MAP.size()];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,15 +87,111 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         result = (TextView) findViewById(R.id.result);
         scanButton = (Button) findViewById(R.id.scan);
+        barcodeTypes = (EditText) findViewById(R.id.barcode_types);
+        modeSpinner = (Spinner) findViewById(R.id.scanner_mode);
+
+        barcodeTypeItems = TYPE_MAP.values().toArray(barcodeTypeItems);
+
+        ArrayAdapter adapter = new SpinnerAdapter(this, R.layout.simple_spinner_item);
+        modeSpinner.setAdapter(adapter);
+        modeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0:
+                        mMode = MVBarcodeScanner.ScanningMode.SINGLE_AUTO;
+                        break;
+
+                    case 1:
+                        mMode = MVBarcodeScanner.ScanningMode.SINGLE_MANUAL;
+                        break;
+
+                    case 2:
+                        mMode = MVBarcodeScanner.ScanningMode.MULTIPLE;
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         scanButton.setOnClickListener(this);
+        barcodeTypes.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
-        new MVBarcodeScanner.Builder().build()
-                .launchScanner(this, REQ_CODE);
+        if (view.getId() == scanButton.getId()) {
+            new MVBarcodeScanner.Builder()
+                    .setScanningMode(mMode)
+                    .setFormats(mFormats)
+                    .build()
+                    .launchScanner(this, REQ_CODE);
+        } else if (view.getId() == barcodeTypes.getId()) {
+            showBarcodeTypesPicker();
+        }
+    }
 
+    void showBarcodeTypesPicker() {
+        final boolean[] checkedItems = Arrays.copyOf(checkedStates, checkedStates.length);
+        new AlertDialog.Builder(this)
+                .setTitle("Select Types")
+                .setMultiChoiceItems(barcodeTypeItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        checkedItems[which] = isChecked;
+                    }
+                })
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        checkedStates = checkedItems;
+                        updateFormats();
+                    }
+                })
+                .show();
+    }
+
+    void updateFormats() {
+        @MVBarcodeScanner.BarCodeFormat List<Integer> formats = new ArrayList<>();
+        String barcodes = "";
+        int count = 0;
+        for (int i = 0; i < checkedStates.length; i++) {
+            if (checkedStates[i]) {
+                int format = getFormatForValue(barcodeTypeItems[i]);
+                if (format != -1) {
+                    formats.add(format);
+                    barcodes = barcodes + (count > 0 ? ", " : "") + barcodeTypeItems[i];
+                    count++;
+                }
+            }
+        }
+
+        if (count > 0) {
+            mFormats = new int[formats.size()];
+            int i = 0;
+            for (Integer f : formats) {
+                mFormats[i] = f;
+                i++;
+            }
+
+            barcodeTypes.setText(barcodes);
+        } else {
+            mFormats = null;
+            barcodeTypes.setText(null);
+        }
+    }
+
+    @MVBarcodeScanner.BarCodeFormat
+    int getFormatForValue(String value) {
+        for (Map.Entry<Integer, String> entry : TYPE_MAP.entrySet()) {
+            if (entry.getValue().equals(value)) return entry.getKey();
+        }
+
+        return -1;
     }
 
     @Override
@@ -46,87 +199,104 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQ_CODE) {
-            if (resultCode == CommonStatusCodes.SUCCESS && data != null
-                    && data.getExtras() != null && data.getExtras().containsKey(BarcodeCaptureActivity.BarcodeObject)) {
-                mBarcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+            if (resultCode == RESULT_OK && data != null
+                    && data.getExtras() != null) {
+                Log.d("BARCODE-SCANNER", "onActivityResult inside block called");
+                if (data.getExtras().containsKey(MVBarcodeScanner.BarcodeObject)) {
+                    mBarcode = data.getParcelableExtra(MVBarcodeScanner.BarcodeObject);
+                    mBarcodes = null;
+                } else if (data.getExtras().containsKey(MVBarcodeScanner.BarcodeObjects)) {
+                    mBarcodes = data.getParcelableArrayListExtra(MVBarcodeScanner.BarcodeObjects);
+                    mBarcode = null;
+                }
                 updateBarcodeInfo();
             } else {
                 mBarcode = null;
+                mBarcodes = null;
                 updateBarcodeInfo();
             }
         }
     }
 
     void updateBarcodeInfo() {
+        StringBuilder builder = new StringBuilder();
+
         if (mBarcode != null) {
-            result.setText("Type: " + getBarcodeFormatName(mBarcode.format) +
-                    "\nData: " + mBarcode.rawValue);
-        } else result.setText("");
+            Log.d("BARCODE-SCANNER", "got barcode");
+            builder.append("Type: " + getBarcodeFormatName(mBarcode.format) +
+                    "\nData: " + mBarcode.rawValue + "\n\n");
+        }
+
+        if (mBarcodes != null) {
+            Log.d("BARCODE-SCANNER", "got barcodes");
+            for (Barcode barcode : mBarcodes) {
+                builder.append("Type: " + getBarcodeFormatName(barcode.format) +
+                        "\nData: " + barcode.rawValue + "\n\n");
+            }
+        }
+
+        if (builder.length() > 0)
+            result.setText(builder.toString());
+        else result.setText("");
     }
 
     String getBarcodeFormatName(int format) {
-        switch (format) {
-            case Barcode.AZTEC:
-                return "Aztec";
+        return TYPE_MAP.get(format);
+    }
 
-            case Barcode.CALENDAR_EVENT:
-                return "Calendar Event";
+    class ModeData {
+        String name;
+        String description;
 
-            case Barcode.CODABAR:
-                return "Codabar";
+        ModeData(String title, String message) {
+            name = title;
+            description = message;
+        }
+    }
 
-            case Barcode.CODE_39:
-                return "Code 39";
+    class SpinnerAdapter extends ArrayAdapter<ModeData> {
+        final String[] Modes = {"Single - Auto", "Single - Manual", "Multiple"};
+        final String[] Descriptions = {"Returns the first barcode it detects", "Returns the single barcode user tapped on",
+                "Returns all the detected barcodes after tap"};
 
-            case Barcode.CODE_93:
-                return "Code 93";
-
-            case Barcode.CODE_128:
-                return "Code 128";
-
-            case Barcode.DATA_MATRIX:
-                return "Data Matrix";
-
-            case Barcode.DRIVER_LICENSE:
-                return "Driver License";
-
-            case Barcode.EAN_8:
-                return "EAN 8";
-
-            case Barcode.EAN_13:
-                return "EAN 13";
-
-            case Barcode.GEO:
-                return "GEO";
-
-            case Barcode.ISBN:
-                return "ISBN";
-
-            case Barcode.ITF:
-                return "ITF";
-
-            case Barcode.PDF417:
-                return "PDF417";
-
-            case Barcode.QR_CODE:
-                return "QR Code";
-
-            case Barcode.SMS:
-                return "SMS";
-
-            case Barcode.TEXT:
-                return "TEXT";
-
-            case Barcode.UPC_A:
-                return "UPC A";
-
-            case Barcode.UPC_E:
-                return "UPC E";
-
-            case Barcode.WIFI:
-                return "WIFI";
+        /**
+         * Constructor
+         *
+         * @param context  The current context.
+         * @param resource The resource ID for a layout file containing a TextView to use when
+         */
+        public SpinnerAdapter(Context context, int resource) {
+            super(context, resource);
         }
 
-        return "Unknown";
+        @Override
+        public int getCount() {
+            return Modes.length;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            if (view == null)
+                view = LayoutInflater.from(getContext()).inflate(R.layout.simple_spinner_item, parent, false);
+
+            TextView title = (TextView) view.findViewById(R.id.title);
+            title.setText(Modes[position]);
+            return view;
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            if (view == null)
+                view = LayoutInflater.from(getContext()).inflate(R.layout.simple_spinner_dropdown_item, parent, false);
+
+            TextView title = (TextView) view.findViewById(R.id.title);
+            TextView message = (TextView) view.findViewById(R.id.message);
+
+            title.setText(Modes[position]);
+            message.setText(Descriptions[position]);
+            return view;
+        }
     }
 }

@@ -50,6 +50,7 @@ class BarcodeGraphicTracker extends Tracker<Barcode> {
     @Override
     public void onNewItem(int id, Barcode item) {
         mGraphic.setId(id);
+        if (mListener != null) mListener.onNewBarcodeDetected(id, item);
     }
 
     /**

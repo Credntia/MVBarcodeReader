@@ -54,7 +54,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
     int mFormats = Barcode.ALL_FORMATS;
-    ScanningMode mMode = ScanningMode.SINGLE_AUTO;
+    MVBarcodeScanner.ScanningMode mMode = MVBarcodeScanner.ScanningMode.SINGLE_AUTO;
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -65,11 +65,11 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
 
-    public static BarcodeCaptureFragment instantiate(ScanningMode mode,
-                                                     @BarCodeFormat int... formats) {
+    public static BarcodeCaptureFragment instantiate(MVBarcodeScanner.ScanningMode mode,
+                                                     @MVBarcodeScanner.BarCodeFormat int... formats) {
         BarcodeCaptureFragment fragment = new BarcodeCaptureFragment();
         Bundle args = new Bundle();
-        args.putSerializable(MVBarcodeScanner.SCANNING_MODE, mode);
+        if (mode != null) args.putSerializable(MVBarcodeScanner.SCANNING_MODE, mode);
 
         if (formats != null && formats.length > 0) {
             int barcodeFormats = formats[0];
@@ -96,7 +96,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
         if (getArguments() != null && !getArguments().isEmpty()) {
             if (getArguments().containsKey(MVBarcodeScanner.SCANNING_MODE))
-                mMode = (ScanningMode) getArguments().getSerializable(MVBarcodeScanner.SCANNING_MODE);
+                mMode = (MVBarcodeScanner.ScanningMode) getArguments().getSerializable(MVBarcodeScanner.SCANNING_MODE);
 
             if (getArguments().containsKey(MVBarcodeScanner.BARCODE_FORMATS))
                 mFormats = getArguments().getInt(MVBarcodeScanner.BARCODE_FORMATS);
@@ -276,8 +276,14 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(mGraphicOverlay, new BarcodeGraphicTracker.BarcodeDetectionListener() {
             @Override
             public void onNewBarcodeDetected(int id, Barcode barcode) {
-                if (mMode == ScanningMode.SINGLE_AUTO && barcode != null) {
-                    if (mListener != null) mListener.onBarcodeScanned(barcode);
+                Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
+                if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
+                    if (mListener != null) {
+                        if (barcode != null) mListener.onBarcodeScanned(barcode);
+                        else if (mGraphicOverlay.getFirstGraphic() != null && mGraphicOverlay.getFirstGraphic().getBarcode() != null) {
+                            mListener.onBarcodeScanned(mGraphicOverlay.getFirstGraphic().getBarcode());
+                        }
+                    }
                 }
             }
         });
@@ -386,7 +392,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     private boolean onTap(float rawX, float rawY) {
         Barcode barcode = null;
 
-        if (mMode == ScanningMode.SINGLE_AUTO) {
+        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
             BarcodeGraphic graphic = mGraphicOverlay.getFirstGraphic();
 
             if (graphic != null) {
@@ -395,8 +401,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     mListener.onBarcodeScanned(barcode);
                 }
             }
-        } else if (mMode == ScanningMode.SINGLE_MANUAL) {
-            //TODO: use the tap position to select the barcode.
+        } else if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_MANUAL) {
             Set<BarcodeGraphic> graphicSet = mGraphicOverlay.getAllGraphics();
             if (graphicSet != null && !graphicSet.isEmpty()) {
                 for (BarcodeGraphic graphic : graphicSet) {
@@ -492,45 +497,6 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         public void onScaleEnd(ScaleGestureDetector detector) {
             mCameraSource.doZoom(detector.getScaleFactor());
         }
-    }
-
-    @IntDef({
-            Barcode.ALL_FORMATS,
-            Barcode.AZTEC,
-            Barcode.CALENDAR_EVENT,
-            Barcode.CODABAR,
-            Barcode.CODE_39,
-            Barcode.CODE_93,
-            Barcode.CODE_128,
-            Barcode.CONTACT_INFO,
-            Barcode.DATA_MATRIX,
-            Barcode.DRIVER_LICENSE,
-            Barcode.EAN_8,
-            Barcode.EAN_13,
-            Barcode.EMAIL,
-            Barcode.GEO,
-            Barcode.ISBN,
-            Barcode.ITF,
-            Barcode.PDF417,
-            Barcode.PHONE,
-            Barcode.PRODUCT,
-            Barcode.QR_CODE,
-            Barcode.SMS,
-            Barcode.UPC_A,
-            Barcode.TEXT,
-            Barcode.UPC_E,
-            Barcode.URL,
-            Barcode.WIFI
-    })
-    @interface BarCodeFormat {
-
-    }
-
-
-    enum ScanningMode {
-        SINGLE_AUTO,
-        SINGLE_MANUAL,
-        MULTIPLE
     }
 
     public interface BarcodeScanningListener {

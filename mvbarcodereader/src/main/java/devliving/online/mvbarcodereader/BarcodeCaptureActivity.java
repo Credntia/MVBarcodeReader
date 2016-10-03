@@ -16,6 +16,7 @@
 package devliving.online.mvbarcodereader;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,7 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
@@ -38,10 +38,6 @@ import java.util.List;
  */
 public final class BarcodeCaptureActivity extends AppCompatActivity implements BarcodeCaptureFragment.BarcodeScanningListener {
     private static final String TAG = "Barcode-reader";
-
-    // constants used to pass extra data in the intent
-    public static final String BarcodeObject = "Barcode";
-    public static final String BarcodeObjects = "Barcodes";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,14 +68,13 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
         setContentView(R.layout.barcode_capture_activity);
 
-        FrameLayout container = (FrameLayout) findViewById(R.id.container);
         BarcodeCaptureFragment fragment = null;
-        BarcodeCaptureFragment.ScanningMode mode = null;
-        @BarcodeCaptureFragment.BarCodeFormat int[] formats = null;
+        MVBarcodeScanner.ScanningMode mode = null;
+        @MVBarcodeScanner.BarCodeFormat int[] formats = null;
 
         if (getIntent().getExtras() != null) {
             if (getIntent().getExtras().containsKey(MVBarcodeScanner.SCANNING_MODE)) {
-                mode = (BarcodeCaptureFragment.ScanningMode) getIntent().getExtras().getSerializable(MVBarcodeScanner.SCANNING_MODE);
+                mode = (MVBarcodeScanner.ScanningMode) getIntent().getExtras().getSerializable(MVBarcodeScanner.SCANNING_MODE);
             }
 
             if (getIntent().getExtras().containsKey(MVBarcodeScanner.BARCODE_FORMATS)) {
@@ -90,22 +85,26 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
         fragment = BarcodeCaptureFragment.instantiate(mode, formats);
         getSupportFragmentManager().beginTransaction()
-                .add(fragment, fragment.getTag())
+                .add(R.id.container, fragment)
                 .commit();
         Log.d(TAG, "fragment added");
     }
 
     @Override
     public void onBarcodeScanned(Barcode barcode) {
-        getIntent().putExtra(BarcodeObject, barcode);
-        setResult(RESULT_OK);
+        Log.d("BARCODE-SCANNER", "got barcode in scanner");
+        Intent data = new Intent();
+        data.putExtra(MVBarcodeScanner.BarcodeObject, barcode);
+        setResult(RESULT_OK, data);
         finish();
     }
 
     @Override
     public void onBarcodesScanned(List<Barcode> barcodes) {
-        getIntent().putParcelableArrayListExtra(BarcodeObjects, (ArrayList<Barcode>) barcodes);
-        setResult(RESULT_OK);
+        Log.d("BARCODE-SCANNER", "got s in scanner");
+        Intent data = new Intent();
+        data.putParcelableArrayListExtra(MVBarcodeScanner.BarcodeObjects, (ArrayList<Barcode>) barcodes);
+        setResult(RESULT_OK, data);
         finish();
     }
 

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">MVBarcodeReader</string>
+    <string-array name="scanner_modes">
+        <item>Single - Auto</item>
+        <item>Single - Manual</item>
+        <item>Multiple</item>
+    </string-array>
 </resources>
