@@ -21,6 +21,7 @@ import com.google.android.gms.vision.barcode.Barcode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     List<Barcode> mBarcodes;
 
     final static HashMap<Integer, String> TYPE_MAP;
+    final static String[] barcodeTypeItems;
 
     static {
         TYPE_MAP = new HashMap<>();
@@ -74,10 +76,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TYPE_MAP.put(Barcode.UPC_E, "UPC E");
         TYPE_MAP.put(Barcode.TEXT, "Text");
         TYPE_MAP.put(Barcode.URL, "URL");
-        TYPE_MAP.put(Barcode.WIFI, "WIFI");
+
+        List<String> items = new ArrayList<>(TYPE_MAP.values());
+        Collections.sort(items);
+        String[] tempArray = new String[items.size()];
+        tempArray = items.toArray(tempArray);
+        barcodeTypeItems = tempArray;
     }
 
-    String[] barcodeTypeItems = new String[TYPE_MAP.size()];
     boolean[] checkedStates = new boolean[TYPE_MAP.size()];
 
     @Override
@@ -89,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scanButton = (Button) findViewById(R.id.scan);
         barcodeTypes = (EditText) findViewById(R.id.barcode_types);
         modeSpinner = (Spinner) findViewById(R.id.scanner_mode);
-
-        barcodeTypeItems = TYPE_MAP.values().toArray(barcodeTypeItems);
 
         ArrayAdapter adapter = new SpinnerAdapter(this, R.layout.simple_spinner_item);
         modeSpinner.setAdapter(adapter);
@@ -137,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void showBarcodeTypesPicker() {
         final boolean[] checkedItems = Arrays.copyOf(checkedStates, checkedStates.length);
+
         new AlertDialog.Builder(this)
                 .setTitle("Select Types")
                 .setMultiChoiceItems(barcodeTypeItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
