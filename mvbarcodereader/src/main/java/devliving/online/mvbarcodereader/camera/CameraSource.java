@@ -584,7 +584,7 @@ public class CameraSource {
                     return true;
                 }
             }
-
+            Log.d(TAG, "camera flash mode not supported, mode: " + mode);
             return false;
         }
     }

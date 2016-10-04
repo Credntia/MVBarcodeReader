@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -26,6 +27,10 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -55,6 +60,11 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
     int mFormats = Barcode.ALL_FORMATS;
     MVBarcodeScanner.ScanningMode mMode = MVBarcodeScanner.ScanningMode.SINGLE_AUTO;
+
+    FrameLayout topLayout;
+    ImageButton flashToggle;
+
+    boolean mFlashOn = false;
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -109,14 +119,40 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         View content = inflater.inflate(R.layout.barcode_capture, container, false);
         mPreview = (CameraSourcePreview) content.findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) content.findViewById(R.id.graphicOverlay);
+        topLayout = (FrameLayout) content.findViewById(R.id.topLayout);
+        flashToggle = (ImageButton) content.findViewById(R.id.flash_torch);
 
-        int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
-        if (rc == PackageManager.PERMISSION_GRANTED) {
-            createCameraSource();
-        }
+        flashToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("SCANNER-FRAGMENT", "Got tap on Flash");
+                if (mCameraSource.setFlashMode(mFlashOn ? Camera.Parameters.FLASH_MODE_OFF : Camera.Parameters.FLASH_MODE_TORCH)) {
+                    mFlashOn = !mFlashOn;
+                    flashToggle.setImageResource(mFlashOn ? R.drawable.ic_torch_on : R.drawable.ic_torch);
+                }
+            }
+        });
 
         gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
         scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
+
+        topLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                topLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+
+                if (mCameraSource == null) {
+
+                    int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
+                    if (rc == PackageManager.PERMISSION_GRANTED) {
+                        createCameraSource();
+                        startCameraSource();
+                    } else {
+                        requestCameraPermission();
+                    }
+                } else startCameraSource();
+            }
+        });
 
         content.setOnTouchListener(this);
         return content;
@@ -126,15 +162,9 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     public void onResume() {
         super.onResume();
 
-        if (mCameraSource == null) {
-            int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
-            if (rc == PackageManager.PERMISSION_GRANTED) {
-                createCameraSource();
-                startCameraSource();
-            } else {
-                requestCameraPermission();
-            }
-        } else startCameraSource();
+        if (mCameraSource != null) {
+            startCameraSource();
+        }
     }
 
     /**
@@ -231,18 +261,15 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
         final String[] permissions = new String[]{Manifest.permission.CAMERA};
 
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                Manifest.permission.CAMERA)) {
-            ActivityCompat.requestPermissions(getActivity(), permissions, RC_HANDLE_CAMERA_PERM);
+        if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+            requestPermissions(permissions, RC_HANDLE_CAMERA_PERM);
             return;
         }
-
-        final Activity thisActivity = getActivity();
 
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ActivityCompat.requestPermissions(thisActivity, permissions,
+                requestPermissions(permissions,
                         RC_HANDLE_CAMERA_PERM);
             }
         };
@@ -317,12 +344,15 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
             }
         }
 
+        boolean isPortrait = mPreview.isPortraitMode();
+
         // Creates and starts the camera.  Note that this uses a higher resolution in comparison
         // to other detection examples to enable the barcode detector to detect small barcodes
         // at long distances.
         CameraSource.Builder builder = new CameraSource.Builder(getActivity().getApplicationContext(), barcodeDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(1600, 1024)
+                .setRequestedPreviewSize(isPortrait ? topLayout.getHeight() : topLayout.getWidth(),
+                        isPortrait ? topLayout.getWidth() : topLayout.getHeight())
                 .setRequestedFps(15.0f);
 
         // make sure that auto focus is an available option
@@ -352,7 +382,6 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         if (mCameraSource != null) {
             try {
                 mPreview.start(mCameraSource, mGraphicOverlay);
-                Log.d("SCANNER-FRAGMENT", "started camera preview");
             } catch (IOException e) {
                 Log.e("BARCODE-SCANNER", "Unable to start camera source.", e);
                 mCameraSource.release();

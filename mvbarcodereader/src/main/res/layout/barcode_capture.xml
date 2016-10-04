@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/topLayout"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:keepScreenOn="true"
-    android:background="@android:color/black">
+    android:background="@android:color/black"
+    android:descendantFocusability="afterDescendants">
 
     <devliving.online.mvbarcodereader.camera.CameraSourcePreview
         android:id="@+id/preview"
@@ -20,4 +20,15 @@
 
     </devliving.online.mvbarcodereader.camera.CameraSourcePreview>
 
-</LinearLayout>
+    <ImageButton
+        android:id="@+id/flash_torch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_margin="16dp"
+        android:scaleType="fitXY"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_torch"
+        android:clickable="true" />
+
+</FrameLayout>
