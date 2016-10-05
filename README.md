@@ -1,8 +1,23 @@
 # MVBarcodeReader
+[ ![Download](https://api.bintray.com/packages/iammehedi/MVBarcodeReader/online.devliving%3Amvbarcodereader/images/download.svg) ](https://bintray.com/iammehedi/MVBarcodeReader/online.devliving%3Amvbarcodereader/_latestVersion)
+
 A Barcode scanning library for Android. Uses the Google Play Services' mobile vision api for barcode detection.
 
 ##Setup
-......coming soon
+###Maven
+```xml
+<dependency>
+  <groupId>online.devliving</groupId>
+  <artifactId>mvbarcodereader</artifactId>
+  <version>LATEST_VERSION</version>
+  <type>pom</type>
+</dependency>
+```
+
+###Gradle
+```xml
+compile 'online.devliving:mvbarcodereader:LATEST_VERSION'
+```
 
 ##Usage
 ###Scanning Modes
