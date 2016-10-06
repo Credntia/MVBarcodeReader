@@ -1,5 +1,6 @@
 # MVBarcodeReader
 [ ![Download](https://api.bintray.com/packages/iammehedi/MVBarcodeReader/online.devliving%3Amvbarcodereader/images/download.svg) ](https://bintray.com/iammehedi/MVBarcodeReader/online.devliving%3Amvbarcodereader/_latestVersion)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-MVBarcodeReader-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4457)
 
 A Barcode scanning library for Android. Uses the Google Play Services' mobile vision api for barcode detection.
 
