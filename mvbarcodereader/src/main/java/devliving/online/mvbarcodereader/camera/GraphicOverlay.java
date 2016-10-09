@@ -27,11 +27,11 @@ import java.util.Set;
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview
  * (i.e., the camera preview).  The creator can add graphics objects, update the objects, and remove
  * them, triggering the appropriate drawing and invalidation within the view.<p>
- * <p/>
+ * </p>
  * Supports scaling and mirroring of the graphics relative the camera's preview properties.  The
  * idea is that detection items are expressed in terms of a preview size, but need to be scaled up
  * to the full view size, and also mirrored in the case of the front-facing camera.<p>
- * <p/>
+ * </p>
  * Associated {@link Graphic} items should use the following methods to convert to view coordinates
  * for the graphics that are drawn:
  * <ol>
