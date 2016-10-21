@@ -129,9 +129,21 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mCameraSource != null) mCameraSource.updateRotation();
+    }
+
+
+    @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int width = 320;
-        int height = 240;
+        final int layoutWidth = right - left;
+        final int layoutHeight = bottom - top;
+
+        int width = layoutWidth;
+        int height = layoutHeight;
+
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
@@ -148,18 +160,43 @@ public class CameraSourcePreview extends ViewGroup {
             height = tmp;
         }
 
-        final int layoutWidth = right - left;
-        final int layoutHeight = bottom - top;
+        final float aspectRatio = (float) width / (float) height;
 
-        // Computes height and width for potentially doing fit width.
-        int childWidth = layoutWidth;
-        int childHeight = (int) (((float) layoutWidth / (float) width) * height);
+        Log.d(TAG, "aspect ratio: " + aspectRatio);
 
-        // If height is too tall using fit width, does fit height instead.
-        if (childHeight > layoutHeight) {
+        int childWidth;
+        int childHeight;
+
+        if (layoutHeight > layoutWidth) {
+            //fit height
             childHeight = layoutHeight;
-            childWidth = (int) (((float) layoutHeight / (float) height) * width);
+            childWidth = Math.round(childHeight * aspectRatio);
+            Log.d(TAG, "fit height -> cw: " + childWidth + ", ch: " + childHeight);
+
+            if (childWidth < layoutWidth) {
+                int diff = layoutWidth - childWidth;
+                childWidth = childWidth + diff;
+                childHeight = childHeight + Math.round(diff / aspectRatio);
+
+                Log.d(TAG, "fit height [nested block] -> cw: " + childWidth + ", ch: " + childHeight);
+            }
+        } else {
+            //fit width
+            childWidth = layoutWidth;
+            childHeight = Math.round(childWidth / aspectRatio);
+            Log.d(TAG, "fit width -> cw: " + childWidth + ", ch: " + childHeight);
+
+            if (childHeight < layoutHeight) {
+                int diff = layoutHeight - childHeight;
+                childHeight = childHeight + diff;
+                childWidth = childWidth + Math.round(diff * aspectRatio);
+
+                Log.d(TAG, "fit width [nested block] -> cw: " + childWidth + ", ch: " + childHeight);
+            }
         }
+
+        Log.d(TAG, "layout size: w: " + layoutWidth + ", h: " + layoutHeight
+                + " - fit size: w: " + childWidth + ", h: " + childHeight);
 
         for (int i = 0; i < getChildCount(); ++i) {
             getChildAt(i).layout(0, 0, childWidth, childHeight);

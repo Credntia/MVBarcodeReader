@@ -44,6 +44,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,15 +131,13 @@ public class CameraSource {
      * See {@link Frame.Metadata#getRotation()}.
      */
     private int mRotation;
+    private int mCameraId;
 
     private Size mPreviewSize;
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
     private float mRequestedFps = 30.0f;
-    private int mRequestedPreviewWidth = 1024;
-    private int mRequestedPreviewHeight = 768;
-
 
     private String mFocusMode = null;
     private String mFlashMode = null;
@@ -154,6 +154,8 @@ public class CameraSource {
      */
     private Thread mProcessingThread;
     private FrameProcessingRunnable mFrameProcessor;
+
+    private boolean isSafeToTakePicture = false;
 
     /**
      * Map to convert between a byte array, received from the camera, and its associated byte
@@ -208,25 +210,6 @@ public class CameraSource {
 
         public Builder setFlashMode(@FlashMode String mode) {
             mCameraSource.mFlashMode = mode;
-            return this;
-        }
-
-        /**
-         * Sets the desired width and height of the camera frames in pixels.  If the exact desired
-         * values are not available options, the best matching available options are selected.
-         * Also, we try to select a preview size which corresponds to the aspect ratio of an
-         * associated full picture size, if applicable.  Default: 1024x768.
-         */
-        public Builder setRequestedPreviewSize(int width, int height) {
-            // Restrict the requested range to something within the realm of possibility.  The
-            // choice of 1000000 is a bit arbitrary -- intended to be well beyond resolutions that
-            // devices can support.  We bound this to avoid int overflow in the code later.
-            final int MAX = 1000000;
-            if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
-                throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
-            }
-            mCameraSource.mRequestedPreviewWidth = width;
-            mCameraSource.mRequestedPreviewHeight = height;
             return this;
         }
 
@@ -353,6 +336,7 @@ public class CameraSource {
                 mCamera.setPreviewDisplay(mDummySurfaceView.getHolder());
             }
             mCamera.startPreview();
+            isSafeToTakePicture = true;
 
             mProcessingThread = new Thread(mFrameProcessor);
             mFrameProcessor.setActive(true);
@@ -378,6 +362,7 @@ public class CameraSource {
             mCamera = createCamera();
             mCamera.setPreviewDisplay(surfaceHolder);
             mCamera.startPreview();
+            isSafeToTakePicture = true;
 
             mProcessingThread = new Thread(mFrameProcessor);
             mFrameProcessor.setActive(true);
@@ -412,6 +397,7 @@ public class CameraSource {
 
             // clear the buffer to prevent oom exceptions
             mBytesToByteBuffer.clear();
+            isSafeToTakePicture = false;
 
             if (mCamera != null) {
                 mCamera.stopPreview();
@@ -496,7 +482,8 @@ public class CameraSource {
      */
     public void takePicture(ShutterCallback shutter, PictureCallback jpeg) {
         synchronized (mCameraLock) {
-            if (mCamera != null) {
+            if (mCamera != null && isSafeToTakePicture) {
+                isSafeToTakePicture = false;
                 PictureStartCallback startCallback = new PictureStartCallback();
                 startCallback.mDelegate = shutter;
                 PictureDoneCallback doneCallback = new PictureDoneCallback();
@@ -701,6 +688,7 @@ public class CameraSource {
             synchronized (mCameraLock) {
                 if (mCamera != null) {
                     mCamera.startPreview();
+                    isSafeToTakePicture = true;
                 }
             }
         }
@@ -742,13 +730,13 @@ public class CameraSource {
      */
     @SuppressLint("InlinedApi")
     private Camera createCamera() {
-        int requestedCameraId = getIdForRequestedCamera(mFacing);
-        if (requestedCameraId == -1) {
+        mCameraId = getIdForRequestedCamera(mFacing);
+        if (mCameraId == -1) {
             throw new RuntimeException("Could not find requested camera.");
         }
-        Camera camera = Camera.open(requestedCameraId);
+        Camera camera = Camera.open(mCameraId);
 
-        SizePair sizePair = selectSizePair(camera, mRequestedPreviewWidth, mRequestedPreviewHeight);
+        SizePair sizePair = selectSizePair(camera);
         if (sizePair == null) {
             throw new RuntimeException("Could not find suitable preview size.");
         }
@@ -772,7 +760,7 @@ public class CameraSource {
                 previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
         parameters.setPreviewFormat(ImageFormat.NV21);
 
-        setRotation(camera, parameters, requestedCameraId);
+        setRotation(camera, parameters, mCameraId);
 
         if (mFocusMode != null) {
             if (parameters.getSupportedFocusModes().contains(
@@ -842,29 +830,22 @@ public class CameraSource {
      * image.
      *
      * @param camera        the camera to select a preview size from
-     * @param desiredWidth  the desired width of the camera preview frames
-     * @param desiredHeight the desired height of the camera preview frames
      * @return the selected preview and picture size pair
      */
-    private static SizePair selectSizePair(Camera camera, int desiredWidth, int desiredHeight) {
+    private static SizePair selectSizePair(Camera camera) {
         List<SizePair> validPreviewSizes = generateValidPreviewSizeList(camera);
 
-        // The method for selecting the best size is to minimize the sum of the differences between
-        // the desired values and the actual values for width and height.  This is certainly not the
-        // only way to select the best size, but it provides a decent tradeoff between using the
-        // closest aspect ratio vs. using the closest pixel area.
-        SizePair selectedPair = null;
-        int minDiff = Integer.MAX_VALUE;
-        for (SizePair sizePair : validPreviewSizes) {
-            Size size = sizePair.previewSize();
-            int diff = Math.abs(size.getWidth() - desiredWidth) +
-                    Math.abs(size.getHeight() - desiredHeight);
-            if (diff < minDiff) {
-                selectedPair = sizePair;
-                minDiff = diff;
+        Collections.sort(validPreviewSizes, new Comparator<SizePair>() {
+            @Override
+            public int compare(SizePair lhs, SizePair rhs) {
+                return (rhs.previewSize().getHeight() * rhs.previewSize().getWidth())
+                        - (lhs.previewSize().getHeight() * lhs.previewSize().getWidth());
             }
-        }
+        });
 
+        SizePair selectedPair = validPreviewSizes.get(0);
+        Log.d(TAG, "selected preview size: w:" + selectedPair.previewSize().getWidth()
+                + ", h:" + selectedPair.previewSize().getHeight());
         return selectedPair;
     }
 
@@ -907,18 +888,18 @@ public class CameraSource {
      */
     private static List<SizePair> generateValidPreviewSizeList(Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
-        List<Camera.Size> supportedPreviewSizes =
+        List<android.hardware.Camera.Size> supportedPreviewSizes =
                 parameters.getSupportedPreviewSizes();
-        List<Camera.Size> supportedPictureSizes =
+        List<android.hardware.Camera.Size> supportedPictureSizes =
                 parameters.getSupportedPictureSizes();
         List<SizePair> validPreviewSizes = new ArrayList<>();
-        for (Camera.Size previewSize : supportedPreviewSizes) {
+        for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
             float previewAspectRatio = (float) previewSize.width / (float) previewSize.height;
 
             // By looping through the picture sizes in order, we favor the higher resolutions.
             // We choose the highest resolution in order to support taking the full resolution
             // picture later.
-            for (Camera.Size pictureSize : supportedPictureSizes) {
+            for (android.hardware.Camera.Size pictureSize : supportedPictureSizes) {
                 float pictureAspectRatio = (float) pictureSize.width / (float) pictureSize.height;
                 if (Math.abs(previewAspectRatio - pictureAspectRatio) < ASPECT_RATIO_TOLERANCE) {
                     validPreviewSizes.add(new SizePair(previewSize, pictureSize));
@@ -932,7 +913,7 @@ public class CameraSource {
         // still account for it.
         if (validPreviewSizes.size() == 0) {
             Log.w(TAG, "No preview sizes have a corresponding same-aspect-ratio picture size");
-            for (Camera.Size previewSize : supportedPreviewSizes) {
+            for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
                 // The null picture size will let us know that we shouldn't set a picture size.
                 validPreviewSizes.add(new SizePair(previewSize, null));
             }
@@ -972,6 +953,12 @@ public class CameraSource {
             }
         }
         return selectedFpsRange;
+    }
+
+    public void updateRotation() {
+        if (mCamera != null) {
+            setRotation(mCamera, mCamera.getParameters(), mCameraId);
+        }
     }
 
     /**

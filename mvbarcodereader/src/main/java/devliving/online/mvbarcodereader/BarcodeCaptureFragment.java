@@ -136,24 +136,6 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
         scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
 
-        topLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                topLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-
-                if (mCameraSource == null) {
-
-                    int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
-                    if (rc == PackageManager.PERMISSION_GRANTED) {
-                        createCameraSource();
-                        startCameraSource();
-                    } else {
-                        requestCameraPermission();
-                    }
-                } else startCameraSource();
-            }
-        });
-
         content.setOnTouchListener(this);
         return content;
     }
@@ -162,9 +144,15 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     public void onResume() {
         super.onResume();
 
-        if (mCameraSource != null) {
-            startCameraSource();
-        }
+        if (mCameraSource == null) {
+            int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
+            if (rc == PackageManager.PERMISSION_GRANTED) {
+                createCameraSource();
+                startCameraSource();
+            } else {
+                requestCameraPermission();
+            }
+        } else startCameraSource();
     }
 
     /**
@@ -344,15 +332,13 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
             }
         }
 
-        boolean isPortrait = mPreview.isPortraitMode();
+        //boolean isPortrait = mPreview.isPortraitMode();
 
         // Creates and starts the camera.  Note that this uses a higher resolution in comparison
         // to other detection examples to enable the barcode detector to detect small barcodes
         // at long distances.
         CameraSource.Builder builder = new CameraSource.Builder(getActivity().getApplicationContext(), barcodeDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(isPortrait ? topLayout.getHeight() : topLayout.getWidth(),
-                        isPortrait ? topLayout.getWidth() : topLayout.getHeight())
                 .setRequestedFps(15.0f);
 
         // make sure that auto focus is an available option
