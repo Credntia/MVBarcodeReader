@@ -23,5 +23,9 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.google.android.gms:play-services-basement:10.0.1'
+    compile 'com.google.android.gms:play-services-vision:10.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:support-annotations:25.0.1'
     compile project(':mvbarcodereader')
 }
