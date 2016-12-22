@@ -25,11 +25,11 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:+'
-    provided 'com.google.android.gms:play-services-basement:+'
-    provided 'com.google.android.gms:play-services-vision:+'
-    provided 'com.android.support:design:+'
-    provided 'com.android.support:support-annotations:+'
+    compile 'com.android.support:appcompat-v7:25+'
+    provided 'com.google.android.gms:play-services-basement:10+'
+    provided 'com.google.android.gms:play-services-vision:10+'
+    provided 'com.android.support:design:25+'
+    provided 'com.android.support:support-annotations:25+'
 }
 
 def siteUrl = "https://github.com/iamMehedi/MVBarcodeReader"
