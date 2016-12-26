@@ -564,7 +564,8 @@ public class CameraSource {
         synchronized (mCameraLock) {
             if (mCamera != null && mode != null) {
                 Camera.Parameters parameters = mCamera.getParameters();
-                if (parameters.getSupportedFlashModes().contains(mode)) {
+                if (parameters.getSupportedFlashModes() != null &&
+                        parameters.getSupportedFlashModes().contains(mode)) {
                     parameters.setFlashMode(mode);
                     mCamera.setParameters(parameters);
                     mFlashMode = mode;
