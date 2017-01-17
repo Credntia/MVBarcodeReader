@@ -733,8 +733,14 @@ public class CameraSource {
     private Camera createCamera() {
         mCameraId = getIdForRequestedCamera(mFacing);
         if (mCameraId == -1) {
-            throw new RuntimeException("Could not find requested camera.");
+            if(mFacing == CAMERA_FACING_BACK) mFacing = CAMERA_FACING_FRONT;
+            else mFacing = CAMERA_FACING_BACK;
+
+            mCameraId = getIdForRequestedCamera(mFacing);
+
+            if(mCameraId == -1) throw new RuntimeException("Could not find requested camera.");
         }
+        
         Camera camera = Camera.open(mCameraId);
 
         SizePair sizePair = selectSizePair(camera);
