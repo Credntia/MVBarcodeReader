@@ -11,7 +11,8 @@
 
         <activity
             android:name=".BarcodeCaptureActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:configChanges="orientation|screenSize"/>
     </application>
 
 </manifest>

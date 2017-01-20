@@ -88,20 +88,24 @@ public class CameraSourcePreview extends ViewGroup {
     private void startIfReady() throws IOException, SecurityException {
         if (mStartRequested && mSurfaceAvailable) {
             mCameraSource.start(mSurfaceView.getHolder());
-            if (mOverlay != null) {
-                Size size = mCameraSource.getPreviewSize();
-                int min = Math.min(size.getWidth(), size.getHeight());
-                int max = Math.max(size.getWidth(), size.getHeight());
-                if (isPortraitMode()) {
-                    // Swap width and height sizes when in portrait, since it will be rotated by
-                    // 90 degrees
-                    mOverlay.setCameraInfo(min, max, mCameraSource.getCameraFacing());
-                } else {
-                    mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
-                }
-                mOverlay.clear();
-            }
+            updateOverlay();
             mStartRequested = false;
+        }
+    }
+
+    void updateOverlay(){
+        if (mOverlay != null) {
+            Size size = mCameraSource.getPreviewSize();
+            int min = Math.min(size.getWidth(), size.getHeight());
+            int max = Math.max(size.getWidth(), size.getHeight());
+            if (isPortraitMode()) {
+                // Swap width and height sizes when in portrait, since it will be rotated by
+                // 90 degrees
+                mOverlay.setCameraInfo(min, max, mCameraSource.getCameraFacing());
+            } else {
+                mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
+            }
+            mOverlay.clear();
         }
     }
 
@@ -109,6 +113,7 @@ public class CameraSourcePreview extends ViewGroup {
         @Override
         public void surfaceCreated(SurfaceHolder surface) {
             mSurfaceAvailable = true;
+            Log.d(TAG, "Surface created");
             try {
                 startIfReady();
             } catch (SecurityException se) {
@@ -121,6 +126,7 @@ public class CameraSourcePreview extends ViewGroup {
         @Override
         public void surfaceDestroyed(SurfaceHolder surface) {
             mSurfaceAvailable = false;
+            Log.d(TAG, "Surface destroyed");
         }
 
         @Override
@@ -131,8 +137,11 @@ public class CameraSourcePreview extends ViewGroup {
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        if (mCameraSource != null) mCameraSource.updateRotation();
+        Log.d(TAG, "Configuration changed");
+        if (mCameraSource != null){
+            mCameraSource.updateRotation();
+            updateOverlay();
+        }
     }
 
 

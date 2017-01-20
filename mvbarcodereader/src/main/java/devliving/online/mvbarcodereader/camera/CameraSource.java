@@ -740,7 +740,7 @@ public class CameraSource {
 
             if(mCameraId == -1) throw new RuntimeException("Could not find requested camera.");
         }
-        
+
         Camera camera = Camera.open(mCameraId);
 
         SizePair sizePair = selectSizePair(camera);
