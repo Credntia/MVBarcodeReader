@@ -13,6 +13,8 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -42,6 +44,7 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import devliving.online.mvbarcodereader.camera.CameraSource;
@@ -65,6 +68,8 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     ImageButton flashToggle;
 
     boolean mFlashOn = false;
+
+    final Object mLock = new Object();
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -291,14 +296,9 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(mGraphicOverlay, new BarcodeGraphicTracker.BarcodeDetectionListener() {
             @Override
             public void onNewBarcodeDetected(int id, Barcode barcode) {
-                Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
-                if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
-                    if (mListener != null) {
-                        if (barcode != null) mListener.onBarcodeScanned(barcode);
-                        else if (mGraphicOverlay.getFirstGraphic() != null && mGraphicOverlay.getFirstGraphic().getBarcode() != null) {
-                            mListener.onBarcodeScanned(mGraphicOverlay.getFirstGraphic().getBarcode());
-                        }
-                    }
+                if (barcode != null) onBarcodeDetected(barcode);
+                else if (mGraphicOverlay.getFirstGraphic() != null && mGraphicOverlay.getFirstGraphic().getBarcode() != null) {
+                    onBarcodeDetected(mGraphicOverlay.getFirstGraphic().getBarcode());
                 }
             }
         });
@@ -449,6 +449,26 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         }
 
         return barcode != null;
+    }
+
+    boolean isListenerBusy = false;
+    void onBarcodeDetected(final Barcode barcode){
+        Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
+        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null) {
+            synchronized (mLock){
+                if(!isListenerBusy) {
+                    isListenerBusy = true;
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mCameraSource != null) mCameraSource.stop();
+                            mListener.onBarcodeScanned(barcode);
+                            isListenerBusy = false;
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
