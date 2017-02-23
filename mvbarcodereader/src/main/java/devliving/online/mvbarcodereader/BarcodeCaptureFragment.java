@@ -152,14 +152,17 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         if (mCameraSource == null) {
             int rc = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
             if (rc == PackageManager.PERMISSION_GRANTED) {
-                createCameraSource();
-                startCameraSource();
+                initiateCamera();
             } else {
                 requestCameraPermission();
             }
         } else startCameraSource();
     }
 
+    void initiateCamera(){
+        createCameraSource();
+        startCameraSource();
+    }
     /**
      * Stops the camera.
      */
@@ -212,8 +215,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d("BARCODE-SCANNER", "Camera permission granted - initialize the camera source");
             // we have permission, so create the camerasource
-            createCameraSource();
-            startCameraSource();
+            initiateCamera();
             return;
         }
 
