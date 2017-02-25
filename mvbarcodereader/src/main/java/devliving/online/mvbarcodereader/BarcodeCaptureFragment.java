@@ -2,7 +2,6 @@ package devliving.online.mvbarcodereader;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -10,29 +9,27 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -44,7 +41,6 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import devliving.online.mvbarcodereader.camera.CameraSource;
@@ -215,13 +211,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d("BARCODE-SCANNER", "Camera permission granted - initialize the camera source");
             // we have permission, so create the camerasource
-            new Handler(Looper.getMainLooper())
-                    .postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    initiateCamera();
-                }
-            }, 300);
+            initiateCamera();
 
             return;
         }
@@ -268,18 +258,29 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
             return;
         }
 
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestPermissions(permissions,
-                        RC_HANDLE_CAMERA_PERM);
-            }
-        };
-
-        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
-                Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.ok, listener)
+        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale, Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        requestPermissions(permissions, RC_HANDLE_CAMERA_PERM);
+                    }
+                })
                 .show();
+
+
+        /*
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.perm_required)
+                .setMessage(R.string.permission_camera_rationale)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //dialogInterface.dismiss();
+                        requestPermissions(permissions, RC_HANDLE_CAMERA_PERM);
+                    }
+                })
+                .setCancelable(false)
+                .show();*/
     }
 
     /**

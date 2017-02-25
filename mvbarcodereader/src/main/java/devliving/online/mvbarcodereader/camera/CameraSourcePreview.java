@@ -61,6 +61,7 @@ public class CameraSourcePreview extends ViewGroup {
 
         if (mCameraSource != null) {
             mStartRequested = true;
+            requestLayout();
             startIfReady();
         }
     }
@@ -159,6 +160,8 @@ public class CameraSourcePreview extends ViewGroup {
                 width = size.getWidth();
                 height = size.getHeight();
             }
+
+            Log.d(TAG, "camera source not null");
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees

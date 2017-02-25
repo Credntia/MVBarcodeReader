@@ -2,6 +2,7 @@
     <string name="app_name">MVBarcodeReader</string>
     <string name="ok">OK</string>
     <string name="permission_camera_rationale">Access to the camera is needed for barcode detection</string>
+    <string name="perm_required">Permission Required</string>
     <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
     <string name="low_storage_error">Barcode detector dependencies cannot be downloaded due to low device storage</string>
     <string name="title_activity_main">Barcode Reader</string>
