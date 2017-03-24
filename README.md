@@ -4,8 +4,8 @@
 
 A Barcode scanning library for Android. Uses the Google Play Services' mobile vision api for barcode detection.
 
-##Setup
-###Maven
+## Setup
+### Maven
 ```xml
 <dependency>
   <groupId>online.devliving</groupId>
@@ -15,7 +15,7 @@ A Barcode scanning library for Android. Uses the Google Play Services' mobile vi
 </dependency>
 ```
 
-###Gradle
+### Gradle
 ```xml
 compile 'online.devliving:mvbarcodereader:LATEST_VERSION'
 ```
@@ -28,16 +28,16 @@ compile 'com.android.support:design:25.0.1'
 compile 'com.android.support:support-annotations:25.0.1'
 ```
 
-##Usage
-###Scanning Modes
+## Usage
+### Scanning Modes
 - `SINGLE_AUTO`: The fastest mode. Returns the first barcode it can detect as soon as possible.
 - `SINGLE_MANUAL`: Detects and highlights all the barcode it can find but returns only the one that user chooses by tapping.
 - `MULTIPLE`: Detects and highlights all the barcode it can find. Returns all the barcodes on tap.
 
-###Barcode Types
+### Barcode Types
 You can view [this link](https://developers.google.com/vision/barcodes-overview) for a list of supported barcode formats.
 
-###Use the standalone scanner
+### Use the standalone scanner
 launch the scanner from your `Activity` like this:
 ```java
 new MVBarcodeScanner.Builder()
@@ -61,7 +61,7 @@ if (requestCode == REQ_CODE) {
         }
 ```
 
-###Use the scanner fragment
+### Use the scanner fragment
 You can use the `BarcodeCaptureFragment` to scan barcodes. Just add the fragment to your `Activity`
 ```java
 MVBarcodeScanner.ScanningMode mode = null;
