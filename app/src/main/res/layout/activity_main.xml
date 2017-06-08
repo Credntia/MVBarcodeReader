@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/barcode_types"
-        android:layout_above="@+id/scan">
+        android:layout_above="@+id/scan_dialog">
 
         <TextView
             android:id="@+id/result"
@@ -41,6 +41,12 @@
             android:text="" />
     </ScrollView>
 
+    <Button
+        android:id="@+id/scan_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scan with Dialog"
+        android:layout_above="@+id/scan" />
     <Button
         android:id="@+id/scan"
         android:layout_width="match_parent"
