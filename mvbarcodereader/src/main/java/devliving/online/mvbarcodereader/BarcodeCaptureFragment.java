@@ -313,6 +313,11 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     onBarcodeDetected(mGraphicOverlay.getFirstGraphic().getBarcode());
                 }
             }
+
+            @Override
+            public void onBarcodeUpdated(int id, Barcode barcode) {
+                if (barcode != null) onBarcodeDetected(barcode);
+            }
         });
 
         barcodeDetector.setProcessor(
@@ -419,16 +424,18 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     private boolean onTap(float rawX, float rawY) {
         Barcode barcode = null;
 
-        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
-            BarcodeGraphic graphic = mGraphicOverlay.getFirstGraphic();
-
-            if (graphic != null) {
-                barcode = graphic.getBarcode();
-                if (barcode != null && mListener != null) {
-                    mListener.onBarcodeScanned(barcode);
-                }
-            }
-        } else if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_MANUAL) {
+//        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
+//            BarcodeGraphic graphic = mGraphicOverlay.getFirstGraphic();
+//
+//            if (graphic != null) {
+//                barcode = graphic.getBarcode();
+//                if (barcode != null && mListener != null) {
+//                    mListener.onBarcodeScanned(barcode);
+//                }
+//            }
+//        } else
+            if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_MANUAL ||
+                mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
             Set<BarcodeGraphic> graphicSet = mGraphicOverlay.getAllGraphics();
             if (graphicSet != null && !graphicSet.isEmpty()) {
                 for (BarcodeGraphic graphic : graphicSet) {
