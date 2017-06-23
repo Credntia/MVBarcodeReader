@@ -445,7 +445,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && barcode!=null) {
                     mListener.onBarcodeScanned(barcode);
                 }
             }
@@ -461,7 +461,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && !barcodes.isEmpty()) {
                     mListener.onBarcodesScanned(barcodes);
                 }
             }
