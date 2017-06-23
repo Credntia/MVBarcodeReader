@@ -60,6 +60,8 @@ class BarcodeGraphicTracker extends Tracker<Barcode> {
     public void onUpdate(Detector.Detections<Barcode> detectionResults, Barcode item) {
         mOverlay.add(mGraphic);
         mGraphic.updateItem(item);
+
+        if (mListener != null) mListener.onBarcodeUpdated(mGraphic.getId(), item);
     }
 
     /**
@@ -83,5 +85,6 @@ class BarcodeGraphicTracker extends Tracker<Barcode> {
 
     interface BarcodeDetectionListener {
         void onNewBarcodeDetected(int id, Barcode barcode);
+        void onBarcodeUpdated(int id, Barcode barcode);
     }
 }
