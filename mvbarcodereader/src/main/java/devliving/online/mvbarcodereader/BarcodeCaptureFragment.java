@@ -62,6 +62,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
     FrameLayout topLayout;
     ImageButton flashToggle;
+    ViewFinder viewFinder;
 
     boolean mFlashOn = false;
 
@@ -122,6 +123,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) content.findViewById(R.id.graphicOverlay);
         topLayout = (FrameLayout) content.findViewById(R.id.topLayout);
         flashToggle = (ImageButton) content.findViewById(R.id.flash_torch);
+        viewFinder = (ViewFinder) content.findViewById(R.id.view_finder);
 
         flashToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -462,9 +464,12 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     }
 
     boolean isListenerBusy = false;
+
     void onBarcodeDetected(final Barcode barcode){
         Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
-        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null) {
+        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null &&
+                barcode.getBoundingBox().contains(viewFinder.getCenterOfCanvas().x,viewFinder.getCenterOfCanvas().y)) {
+
             synchronized (mLock){
                 if(!isListenerBusy) {
                     isListenerBusy = true;
