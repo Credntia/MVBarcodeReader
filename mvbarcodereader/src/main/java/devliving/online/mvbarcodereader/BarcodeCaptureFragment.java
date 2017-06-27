@@ -62,6 +62,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
     FrameLayout topLayout;
     ImageButton flashToggle;
+    ViewFinder viewFinder;
 
     boolean mFlashOn = false;
 
@@ -122,6 +123,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) content.findViewById(R.id.graphicOverlay);
         topLayout = (FrameLayout) content.findViewById(R.id.topLayout);
         flashToggle = (ImageButton) content.findViewById(R.id.flash_torch);
+        viewFinder = (ViewFinder) content.findViewById(R.id.view_finder);
 
         flashToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -311,6 +313,11 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     onBarcodeDetected(mGraphicOverlay.getFirstGraphic().getBarcode());
                 }
             }
+
+            @Override
+            public void onBarcodeUpdated(int id, Barcode barcode) {
+                if (barcode != null) onBarcodeDetected(barcode);
+            }
         });
 
         barcodeDetector.setProcessor(
@@ -417,16 +424,18 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     private boolean onTap(float rawX, float rawY) {
         Barcode barcode = null;
 
-        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
-            BarcodeGraphic graphic = mGraphicOverlay.getFirstGraphic();
-
-            if (graphic != null) {
-                barcode = graphic.getBarcode();
-                if (barcode != null && mListener != null) {
-                    mListener.onBarcodeScanned(barcode);
-                }
-            }
-        } else if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_MANUAL) {
+//        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
+//            BarcodeGraphic graphic = mGraphicOverlay.getFirstGraphic();
+//
+//            if (graphic != null) {
+//                barcode = graphic.getBarcode();
+//                if (barcode != null && mListener != null) {
+//                    mListener.onBarcodeScanned(barcode);
+//                }
+//            }
+//        } else
+            if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_MANUAL ||
+                mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
             Set<BarcodeGraphic> graphicSet = mGraphicOverlay.getAllGraphics();
             if (graphicSet != null && !graphicSet.isEmpty()) {
                 for (BarcodeGraphic graphic : graphicSet) {
@@ -436,7 +445,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && barcode!=null) {
                     mListener.onBarcodeScanned(barcode);
                 }
             }
@@ -452,7 +461,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && !barcodes.isEmpty()) {
                     mListener.onBarcodesScanned(barcodes);
                 }
             }
@@ -462,9 +471,12 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     }
 
     boolean isListenerBusy = false;
+
     void onBarcodeDetected(final Barcode barcode){
         Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
-        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null) {
+        if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null &&
+                barcode.getBoundingBox().contains(viewFinder.getCenterOfCanvas().x,viewFinder.getCenterOfCanvas().y)) {
+
             synchronized (mLock){
                 if(!isListenerBusy) {
                     isListenerBusy = true;

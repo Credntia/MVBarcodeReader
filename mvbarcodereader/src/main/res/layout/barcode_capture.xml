@@ -31,4 +31,13 @@
         android:src="@drawable/ic_torch"
         android:clickable="true" />
 
+    <devliving.online.mvbarcodereader.ViewFinder
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:id="@+id/view_finder"
+        android:alpha="0.5"
+        android:layout_gravity="center" />
+
+
 </FrameLayout>
