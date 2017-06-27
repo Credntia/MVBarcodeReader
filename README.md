@@ -4,6 +4,10 @@
 
 A Barcode scanning library for Android. Uses the Google Play Services' mobile vision api for barcode detection.
 
+### Gargy Fork Modifications
+- Add viewfinder 
+- SINGLE_AUTO mode scans only when center of viefinder is inside a barcode
+
 ## Setup
 ### Maven
 ```xml
