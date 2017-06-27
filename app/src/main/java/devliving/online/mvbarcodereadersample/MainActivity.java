@@ -19,6 +19,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,10 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import devliving.online.mvbarcodereader.BarcodeCaptureFragment;
 import devliving.online.mvbarcodereader.MVBarcodeScanner;
 
+import static android.R.attr.fragment;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener , BarcodeCaptureFragment.BarcodeScanningListener{
 
     final int REQ_CODE = 12;
 
@@ -48,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final static HashMap<Integer, String> TYPE_MAP;
     final static String[] barcodeTypeItems;
 
+    BarcodeCaptureFragment fragment;
     static {
         TYPE_MAP = new HashMap<>();
 
@@ -124,6 +130,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         scanButton.setOnClickListener(this);
         barcodeTypes.setOnClickListener(this);
+
+        MVBarcodeScanner.ScanningMode mode = null;
+        @MVBarcodeScanner.BarCodeFormat int[] formats = null;
+
+        fragment = BarcodeCaptureFragment.instantiate(mode, formats);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
+
     }
 
     @Override
@@ -249,6 +264,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return TYPE_MAP.get(format);
     }
 
+    @Override
+    public void onBarcodeScanned(Barcode barcode) {
+        mBarcode = barcode;
+        updateBarcodeInfo();
+        Method method = null;
+
+        // call initiateCamera with reflection
+        try {
+            method = Class.forName("devliving.online.mvbarcodereader.BarcodeCaptureFragment").getDeclaredMethod("initiateCamera", null);
+            method.setAccessible(true);
+            method.invoke(fragment  , null); //prints "Method3"
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onBarcodesScanned(List<Barcode> barcodes) {
+
+    }
+
+    @Override
+    public void onBarcodeScanningFailed(String reason) {
+
+    }
+
     class ModeData {
         String name;
         String description;
@@ -304,4 +345,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return view;
         }
     }
+
+
 }

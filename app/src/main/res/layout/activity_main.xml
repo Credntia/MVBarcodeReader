@@ -28,18 +28,21 @@
         android:layout_below="@+id/scanner_mode"
         android:layout_centerHorizontal="true" />
 
-    <ScrollView
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/barcode_types"
-        android:layout_above="@+id/scan">
+        android:layout_above="@+id/scan"
+        android:layout_below="@+id/result">
 
-        <TextView
-            android:id="@+id/result"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="" />
-    </ScrollView>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/barcode_types"
+        android:text="" />
 
     <Button
         android:id="@+id/scan"
