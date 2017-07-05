@@ -1,6 +1,5 @@
 package devliving.online.mvbarcodereadersample;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -101,7 +100,11 @@ public class ScannerDialog extends DialogFragment implements BarcodeCaptureFragm
 
     @Override
     public void onBarcodesScanned(List<Barcode> barcodes) {
-        if(mListener != null) mListener.onScanned((Barcode[]) barcodes.toArray());
+        if(mListener != null){
+            Barcode[] codes = new Barcode[barcodes.size()];
+            barcodes.toArray(codes);
+            mListener.onScanned(codes);
+        }
         dismiss();
     }
 
