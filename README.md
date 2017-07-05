@@ -16,16 +16,16 @@ A Barcode scanning library for Android. Uses the Google Play Services' mobile vi
 ```
 
 ### Gradle
-```xml
+```groovy
 compile 'online.devliving:mvbarcodereader:LATEST_VERSION'
 ```
 Add following dependencies to your app's gradle file
-```xml
-compile 'com.android.support:appcompat-v7:25.0.1'
-compile 'com.google.android.gms:play-services-basement:10.0.1'
-compile 'com.google.android.gms:play-services-vision:10.0.1'
-compile 'com.android.support:design:25.0.1'
-compile 'com.android.support:support-annotations:25.0.1'
+```groovy
+compile 'com.android.support:appcompat-v7:25.3.1'
+compile 'com.google.android.gms:play-services-basement:11.0.1'
+compile 'com.google.android.gms:play-services-vision:11.0.1'
+compile 'com.android.support:design:25.3.1'
+compile 'com.android.support:support-annotations:25.3.1'
 ```
 
 ## Usage
