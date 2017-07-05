@@ -155,16 +155,18 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         } else startCameraSource();
     }
 
-    void initiateCamera(){
+    /**
+     * Make sure you have camera permissions before calling this
+     */
+    protected void initiateCamera(){
         createCameraSource();
         startCameraSource();
     }
+
     /**
      * Stops the camera.
      */
-    @Override
-    public void onPause() {
-        super.onPause();
+    protected void stopCamera(){
         if (mPreview != null) {
             mPreview.stop();
         }
@@ -174,12 +176,24 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
      * Releases the resources associated with the camera source, the associated detectors, and the
      * rest of the processing pipeline.
      */
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+    protected void releaseCamera(){
         if (mPreview != null) {
             mPreview.release();
         }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopCamera();
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
     }
 
     /**
@@ -414,7 +428,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
      * @param rawY - the raw position of the tap.
      * @return true if the activity is ending.
      */
-    private boolean onTap(float rawX, float rawY) {
+    protected boolean onTap(float rawX, float rawY) {
         Barcode barcode = null;
 
         if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
@@ -436,7 +450,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && barcode != null) {
                     mListener.onBarcodeScanned(barcode);
                 }
             }
@@ -452,7 +466,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                     }
                 }
 
-                if (mListener != null) {
+                if (mListener != null && !barcodes.isEmpty()) {
                     mListener.onBarcodesScanned(barcodes);
                 }
             }
@@ -462,7 +476,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     }
 
     boolean isListenerBusy = false;
-    void onBarcodeDetected(final Barcode barcode){
+    protected void onBarcodeDetected(final Barcode barcode){
         Log.d("BARCODE-SCANNER", "NEW BARCODE DETECTED");
         if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO && mListener != null) {
             synchronized (mLock){
