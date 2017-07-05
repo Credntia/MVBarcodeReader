@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final int REQ_CODE = 12;
 
     TextView result;
-    Button scanButton;
+    Button scanButton, scanDialogButton;
     EditText barcodeTypes;
     Spinner modeSpinner;
 
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         result = (TextView) findViewById(R.id.result);
         scanButton = (Button) findViewById(R.id.scan);
+        scanDialogButton = (Button) findViewById(R.id.scan_dialog);
         barcodeTypes = (EditText) findViewById(R.id.barcode_types);
         modeSpinner = (Spinner) findViewById(R.id.scanner_mode);
 
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         scanButton.setOnClickListener(this);
+        scanDialogButton.setOnClickListener(this);
         barcodeTypes.setOnClickListener(this);
     }
 
@@ -136,6 +138,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .launchScanner(this, REQ_CODE);
         } else if (view.getId() == barcodeTypes.getId()) {
             showBarcodeTypesPicker();
+        }
+        else if(view.getId() == scanDialogButton.getId()) {
+            ScannerDialog dialog = ScannerDialog.instantiate(mMode, new ScannerDialog.DialogResultListener() {
+                @Override
+                public void onScanned(Barcode... barcode) {
+                    if(barcode.length > 1) {
+                        mBarcode = null;
+                        mBarcodes = new ArrayList<Barcode>();
+
+                        for(Barcode b:barcode){
+                            mBarcodes.add(b);
+                        }
+                    }
+                    else {
+                        mBarcodes = null;
+                        mBarcode = barcode[0];
+                    }
+
+                    updateBarcodeInfo();
+                }
+
+                @Override
+                public void onFailed(String reason) {
+
+                }
+            }, mFormats);
+
+            Log.d("MAIN", "showing scanner dialog");
+            dialog.show(getSupportFragmentManager(), "SCANNER");
         }
     }
 
@@ -154,14 +185,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         checkedStates = checkedItems;
-                        updateFormats();
+                        mFormats = getUpdatedFormats();
                     }
                 })
                 .show();
     }
 
-    void updateFormats() {
-        @MVBarcodeScanner.BarCodeFormat List<Integer> formats = new ArrayList<>();
+    @MVBarcodeScanner.BarCodeFormat int[] getUpdatedFormats() {
+        List<Integer> formats = new ArrayList<>();
         String barcodes = "";
         int count = 0;
         for (int i = 0; i < checkedStates.length; i++) {
@@ -176,17 +207,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (count > 0) {
-            mFormats = new int[formats.size()];
+            @MVBarcodeScanner.BarCodeFormat int[] iFormats = new int[formats.size()];
             int i = 0;
             for (Integer f : formats) {
-                mFormats[i] = f;
+                iFormats[i] = f;
                 i++;
             }
 
             barcodeTypes.setText(barcodes);
+            return iFormats;
         } else {
-            mFormats = null;
             barcodeTypes.setText(null);
+            return null;
         }
     }
 
