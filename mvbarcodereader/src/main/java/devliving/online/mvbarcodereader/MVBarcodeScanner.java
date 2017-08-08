@@ -12,6 +12,7 @@ import com.google.android.gms.vision.barcode.Barcode;
 public class MVBarcodeScanner {
     public static final String SCANNING_MODE = "scanning_mode";
     public static final String BARCODE_FORMATS = "barcode_formats";
+    public static final String PREVIEW_SCALE_TYPE = "preview_scale_type";
 
     // constants used to pass extra data in the intent
     public static final String BarcodeObject = "Barcode";
@@ -62,8 +63,8 @@ public class MVBarcodeScanner {
             Barcode.CODE_39,
             Barcode.CODE_93,
             Barcode.CODE_128,
-            Barcode.CONTACT_INFO,
-            Barcode.DATA_MATRIX,
+
+            Barcode.DATA_MATRIX,Barcode.CONTACT_INFO,
             Barcode.DRIVER_LICENSE,
             Barcode.EAN_8,
             Barcode.EAN_13,

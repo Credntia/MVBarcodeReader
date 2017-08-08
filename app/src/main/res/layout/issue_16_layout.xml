@@ -63,6 +63,7 @@
     <!-- this is the root layout for the barcode scanner -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/frameLayout_camera_root" />
+        android:layout_height="320dp"
+        android:id="@+id/frameLayout_camera_root"
+        android:layout_gravity="center"/>
 </FrameLayout>
