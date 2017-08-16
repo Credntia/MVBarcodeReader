@@ -131,15 +131,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (view.getId() == scanButton.getId()) {
-
-            /*new MVBarcodeScanner.Builder()
+            new MVBarcodeScanner.Builder()
                     .setScanningMode(mMode)
                     .setFormats(mFormats)
                     .build()
                     .launchScanner(this, REQ_CODE);
-                    */
-            Intent intent = new Intent(this, IssueDebugActivity.class);
-            startActivity(intent);
+
+            //Intent intent = new Intent(this, IssueDebugActivity.class);
+            //startActivity(intent);
         } else if (view.getId() == barcodeTypes.getId()) {
             showBarcodeTypesPicker();
         }
