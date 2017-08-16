@@ -30,6 +30,11 @@ import com.google.android.gms.common.images.Size;
 import java.io.IOException;
 
 public class CameraSourcePreview extends ViewGroup {
+    public enum PreviewScaleType{
+        FIT_CENTER,
+        FILL
+    }
+
     private static final String TAG = "CameraSourcePreview";
 
     private Context mContext;
@@ -39,6 +44,7 @@ public class CameraSourcePreview extends ViewGroup {
     private CameraSource mCameraSource;
 
     private GraphicOverlay mOverlay;
+    private PreviewScaleType mPreviewScaletype = PreviewScaleType.FILL;
 
     public CameraSourcePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -145,12 +151,37 @@ public class CameraSourcePreview extends ViewGroup {
         }
     }
 
+    public void setScaletype(PreviewScaleType mPreviewScaletype) {
+        this.mPreviewScaletype = mPreviewScaletype;
+        postInvalidate();
+    }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final int layoutWidth = right - left;
         final int layoutHeight = bottom - top;
 
+        switch (mPreviewScaletype){
+            case FILL:
+                updateChildSizeForFill(layoutWidth, layoutHeight);
+                break;
+
+            case FIT_CENTER:
+                updateChildSizeForCenterFit(layoutWidth, layoutHeight);
+                break;
+        }
+
+        try {
+            startIfReady();
+        } catch (SecurityException se) {
+            Log.e(TAG, "Do not have permission to start the camera", se);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not start camera source.", e);
+        }
+    }
+
+    /*
+    void updateChildSizeForFill(int layoutWidth, int layoutHeight){
         int width = layoutWidth;
         int height = layoutHeight;
 
@@ -213,13 +244,131 @@ public class CameraSourcePreview extends ViewGroup {
         for (int i = 0; i < getChildCount(); ++i) {
             getChildAt(i).layout(0, 0, childWidth, childHeight);
         }
+    }
+    */
 
-        try {
-            startIfReady();
-        } catch (SecurityException se) {
-            Log.e(TAG, "Do not have permission to start the camera", se);
-        } catch (IOException e) {
-            Log.e(TAG, "Could not start camera source.", e);
+    void updateChildSizeForCenterFit(int layoutWidth, int layoutHeight){
+        int previewWidth = 320;
+        int previewHeight = 240;
+        if (mCameraSource != null) {
+            Size size = mCameraSource.getPreviewSize();
+            if (size != null) {
+                previewWidth = size.getWidth();
+                previewHeight = size.getHeight();
+            }
+        }
+
+        // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
+        if (isPortraitMode()) {
+            int tmp = previewWidth;
+            previewWidth = previewHeight;
+            previewHeight = tmp;
+        }
+
+        final int viewWidth = layoutWidth;
+        final int viewHeight = layoutHeight;
+
+        int childWidth;
+        int childHeight;
+        int childXOffset = 0;
+        int childYOffset = 0;
+        float widthRatio = (float) viewWidth / (float) previewWidth;
+        float heightRatio = (float) viewHeight / (float) previewHeight;
+
+        // To fill the view with the camera preview, while also preserving the correct aspect ratio,
+        // it is usually necessary to slightly oversize the child and to crop off portions along one
+        // of the dimensions.  We scale up based on the dimension requiring the most correction, and
+        // compute a crop offset for the other dimension.
+        if (widthRatio > heightRatio) {
+            childWidth = viewWidth;
+            childHeight = (int) ((float) previewHeight * widthRatio);
+            //childYOffset = (childHeight - viewHeight) / 2;
+        } else {
+            childWidth = (int) ((float) previewWidth * heightRatio);
+            childHeight = viewHeight;
+            //childXOffset = (childWidth - viewWidth) / 2;
+        }
+
+        if(childWidth > viewWidth){
+            while (childWidth > viewWidth){
+                childWidth--;
+                widthRatio = (float) childWidth / (float) previewWidth;
+                childHeight = (int) ((float) previewHeight * widthRatio);
+            }
+        }
+
+        if(childHeight > viewHeight){
+            while (childHeight > viewHeight){
+                childHeight--;
+                heightRatio = (float) childHeight / (float) previewHeight;
+                childWidth = (int) ((float) previewWidth * heightRatio);
+            }
+        }
+
+        childYOffset = (childHeight - viewHeight) / 2;
+        childXOffset = (childWidth - viewWidth) / 2;
+
+        Log.d("PREVIEW", "layout w:" + layoutWidth + ", h:" + layoutHeight + "; child w:" + childWidth
+                + ", h:" + childHeight + ", x:" + childXOffset + ", y:" + childYOffset);
+        for (int i = 0; i < getChildCount(); ++i) {
+            // One dimension will be cropped.  We shift child over or up by this offset and adjust
+            // the size to maintain the proper aspect ratio.
+            getChildAt(i).layout(
+                    -1 * childXOffset, -1 * childYOffset,
+                    childWidth - childXOffset, childHeight - childYOffset);
+        }
+    }
+
+    void updateChildSizeForFill(int layoutWidth, int layoutHeight){
+        int previewWidth = 320;
+        int previewHeight = 240;
+        if (mCameraSource != null) {
+            Size size = mCameraSource.getPreviewSize();
+            if (size != null) {
+                previewWidth = size.getWidth();
+                previewHeight = size.getHeight();
+            }
+        }
+
+        // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
+        if (isPortraitMode()) {
+            int tmp = previewWidth;
+            previewWidth = previewHeight;
+            previewHeight = tmp;
+        }
+
+        final int viewWidth = layoutWidth;
+        final int viewHeight = layoutHeight;
+
+        int childWidth;
+        int childHeight;
+        int childXOffset = 0;
+        int childYOffset = 0;
+        float widthRatio = (float) viewWidth / (float) previewWidth;
+        float heightRatio = (float) viewHeight / (float) previewHeight;
+
+        // To fill the view with the camera preview, while also preserving the correct aspect ratio,
+        // it is usually necessary to slightly oversize the child and to crop off portions along one
+        // of the dimensions.  We scale up based on the dimension requiring the most correction, and
+        // compute a crop offset for the other dimension.
+        if (widthRatio > heightRatio) {
+            childWidth = viewWidth;
+            childHeight = (int) ((float) previewHeight * widthRatio);
+            childYOffset = (childHeight - viewHeight) / 2;
+        } else {
+            childWidth = (int) ((float) previewWidth * heightRatio);
+            childHeight = viewHeight;
+            childXOffset = (childWidth - viewWidth) / 2;
+        }
+        Log.d("PREVIEW", "layout w:" + layoutWidth + ", h:" + layoutHeight + "; child w:" + childWidth
+                + ", h:" + childHeight + ", x:" + childXOffset + ", y:" + childYOffset);
+
+        for (int i = 0; i < getChildCount(); ++i) {
+            // One dimension will be cropped.  We shift child over or up by this offset and adjust
+            // the size to maintain the proper aspect ratio.
+            getChildAt(i).layout(
+                    -1 * childXOffset, -1 * childYOffset,
+                    childWidth - childXOffset, childHeight - childYOffset);
         }
     }
 

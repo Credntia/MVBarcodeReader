@@ -14,6 +14,7 @@ import java.util.List;
 
 import devliving.online.mvbarcodereader.BarcodeCaptureFragment;
 import devliving.online.mvbarcodereader.MVBarcodeScanner;
+import devliving.online.mvbarcodereader.camera.CameraSourcePreview;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 6/8/17.
@@ -85,7 +86,8 @@ public class ScannerDialog extends DialogFragment implements BarcodeCaptureFragm
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        BarcodeCaptureFragment fragment = BarcodeCaptureFragment.instantiate(mMode, mFormats);
+        BarcodeCaptureFragment fragment = BarcodeCaptureFragment.instantiate(mMode, CameraSourcePreview.PreviewScaleType.FIT_CENTER,
+                mFormats);
         fragment.setListener(this);
         getChildFragmentManager().beginTransaction()
                 .add(R.id.container, fragment)

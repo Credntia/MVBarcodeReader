@@ -136,6 +136,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setFormats(mFormats)
                     .build()
                     .launchScanner(this, REQ_CODE);
+
+            //Intent intent = new Intent(this, IssueDebugActivity.class);
+            //startActivity(intent);
         } else if (view.getId() == barcodeTypes.getId()) {
             showBarcodeTypesPicker();
         }

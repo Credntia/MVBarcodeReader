@@ -16,7 +16,7 @@
         android:entries="@array/scanner_modes"
         android:layout_alignParentTop="true"
         android:padding="8dp"
-        android:layout_centerHorizontal="true"></Spinner>
+        android:layout_centerHorizontal="true"/>
 
     <EditText
         android:id="@+id/barcode_types"

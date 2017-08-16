@@ -57,6 +57,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
     int mFormats = Barcode.ALL_FORMATS;
     MVBarcodeScanner.ScanningMode mMode = MVBarcodeScanner.ScanningMode.SINGLE_AUTO;
+    CameraSourcePreview.PreviewScaleType mPreviewScaleType = CameraSourcePreview.PreviewScaleType.FILL;
 
     FrameLayout topLayout;
     ImageButton flashToggle;
@@ -95,6 +96,13 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         return fragment;
     }
 
+    public static BarcodeCaptureFragment instantiate(MVBarcodeScanner.ScanningMode mode, CameraSourcePreview.PreviewScaleType scaleType,
+                                                     @MVBarcodeScanner.BarCodeFormat int... formats) {
+        BarcodeCaptureFragment fragment = instantiate(mode, formats);
+        fragment.getArguments().putSerializable(MVBarcodeScanner.PREVIEW_SCALE_TYPE, scaleType);
+        return fragment;
+    }
+
     public void setListener(BarcodeScanningListener listener) {
         mListener = listener;
     }
@@ -109,6 +117,9 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
 
             if (getArguments().containsKey(MVBarcodeScanner.BARCODE_FORMATS))
                 mFormats = getArguments().getInt(MVBarcodeScanner.BARCODE_FORMATS);
+
+            if (getArguments().containsKey(MVBarcodeScanner.PREVIEW_SCALE_TYPE))
+                mPreviewScaleType = (CameraSourcePreview.PreviewScaleType) getArguments().getSerializable(MVBarcodeScanner.PREVIEW_SCALE_TYPE);
         }
     }
 
@@ -131,7 +142,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                 }
             }
         });
-
+        mPreview.setScaletype(mPreviewScaleType);
         gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
         scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
 
