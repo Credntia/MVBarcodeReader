@@ -9,18 +9,18 @@
     android:background="@android:color/black"
     android:descendantFocusability="afterDescendants">
 
-    <devliving.online.mvbarcodereader.camera.CameraSourcePreview
+    <online.devliving.mobilevisionpipeline.camera.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
 
-        <devliving.online.mvbarcodereader.camera.GraphicOverlay
+        <online.devliving.mobilevisionpipeline.GraphicOverlay
             android:id="@+id/graphicOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </devliving.online.mvbarcodereader.camera.CameraSourcePreview>
+    </online.devliving.mobilevisionpipeline.camera.CameraSourcePreview>
 
     <ImageButton
         android:id="@+id/flash_torch"
