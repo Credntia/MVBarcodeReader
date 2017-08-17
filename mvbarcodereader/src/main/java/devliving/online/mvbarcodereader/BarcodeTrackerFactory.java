@@ -19,7 +19,7 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;
 
-import devliving.online.mvbarcodereader.camera.GraphicOverlay;
+import online.devliving.mobilevisionpipeline.GraphicOverlay;
 
 /**
  * Factory for creating a tracker and associated graphic to be associated with a new barcode.  The

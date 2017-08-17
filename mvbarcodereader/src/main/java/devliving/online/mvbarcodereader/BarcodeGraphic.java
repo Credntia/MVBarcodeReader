@@ -23,7 +23,7 @@ import android.util.Log;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
-import devliving.online.mvbarcodereader.camera.GraphicOverlay;
+import online.devliving.mobilevisionpipeline.GraphicOverlay;
 
 /**
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic

@@ -41,9 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import devliving.online.mvbarcodereader.camera.CameraSource;
-import devliving.online.mvbarcodereader.camera.CameraSourcePreview;
-import devliving.online.mvbarcodereader.camera.GraphicOverlay;
+import online.devliving.mobilevisionpipeline.GraphicOverlay;
+import online.devliving.mobilevisionpipeline.camera.CameraSource;
+import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
 /**
  * Created by Mehedi on 10/2/16.

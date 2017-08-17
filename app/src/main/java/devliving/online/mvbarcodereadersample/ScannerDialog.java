@@ -14,7 +14,7 @@ import java.util.List;
 
 import devliving.online.mvbarcodereader.BarcodeCaptureFragment;
 import devliving.online.mvbarcodereader.MVBarcodeScanner;
-import devliving.online.mvbarcodereader.camera.CameraSourcePreview;
+import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 6/8/17.
