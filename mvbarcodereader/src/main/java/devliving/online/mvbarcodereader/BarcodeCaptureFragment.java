@@ -127,10 +127,10 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View content = inflater.inflate(R.layout.barcode_capture, container, false);
-        mPreview = (CameraSourcePreview) content.findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) content.findViewById(R.id.graphicOverlay);
-        topLayout = (FrameLayout) content.findViewById(R.id.topLayout);
-        flashToggle = (ImageButton) content.findViewById(R.id.flash_torch);
+        mPreview = content.findViewById(R.id.preview);
+        mGraphicOverlay = content.findViewById(R.id.graphicOverlay);
+        topLayout = content.findViewById(R.id.topLayout);
+        flashToggle = content.findViewById(R.id.flash_torch);
 
         flashToggle.setOnClickListener(new View.OnClickListener() {
             @Override
