@@ -5,6 +5,7 @@
     android:id="@+id/container"
     android:layout_gravity="center"
     android:background="@android:color/black"
+    android:descendantFocusability="afterDescendants"
     >
 
 </FrameLayout>

@@ -89,13 +89,20 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         postInvalidate();
     }
 
-    public boolean isPointInsideBarcode(float x, float y) {
+    public boolean isPointInsideBarcode(float rawX, float rawY) {
+
         Barcode barcode = mBarcode;
         if (barcode != null) {
+            /*
             RectF rect = getViewBoundingBox(barcode);
+            float x = translateX(rawX);
+            float y = translateY(rawY);
             Log.d("BARCODE", "rect: t: " + rect.top + ", l: " + rect.left + ", r: " + rect.right + ", b: " + rect.bottom +
                     "/ x: " + x + ", y: " + y);
             return rect.contains(x, y);
+            */
+
+            return barcode.getBoundingBox().contains((int)rawX, (int)rawY);
         }
 
         return false;

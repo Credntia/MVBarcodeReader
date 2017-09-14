@@ -146,7 +146,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
         gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
         scaleGestureDetector = new ScaleGestureDetector(getActivity(), new ScaleListener());
 
-        content.setOnTouchListener(this);
+        mPreview.setOnTouchListener(this);
         return content;
     }
 
@@ -438,6 +438,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
      * @return true if the activity is ending.
      */
     protected boolean onTap(float rawX, float rawY) {
+        Log.d("CAPTURE-FRAGMENT", "got tap at: (" + rawX + ", " + rawY + ")");
         Barcode barcode = null;
 
         if (mMode == MVBarcodeScanner.ScanningMode.SINGLE_AUTO) {
@@ -454,6 +455,7 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
             if (graphicSet != null && !graphicSet.isEmpty()) {
                 for (BarcodeGraphic graphic : graphicSet) {
                     if (graphic != null && graphic.isPointInsideBarcode(rawX, rawY)) {
+                        Log.d("CAPTURE-FRAGMENT", "got tap inside barcode");
                         barcode = graphic.getBarcode();
                         break;
                     }
@@ -469,9 +471,9 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
                 List<Barcode> barcodes = new ArrayList<>();
 
                 for (BarcodeGraphic graphic : graphicSet) {
-                    if (graphic != null) {
+                    if (graphic != null && graphic.getBarcode() != null) {
                         barcode = graphic.getBarcode();
-                        if (barcode != null) barcodes.add(barcode);
+                        barcodes.add(barcode);
                     }
                 }
 
