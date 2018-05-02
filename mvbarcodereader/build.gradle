@@ -23,14 +23,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'online.devliving:mobilevision-pipeline:1.0.7'
-    provided 'com.google.android.gms:play-services-basement:11.8.0'
-    provided 'com.google.android.gms:play-services-vision:11.8.0'
-    provided 'com.android.support:design:26.1.0'
-    provided 'com.android.support:support-annotations:27.0.2'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'online.devliving:mobilevision-pipeline:1.0.7'
+    implementation 'com.google.android.gms:play-services-basement:11.8.0'
+    implementation 'com.google.android.gms:play-services-vision:11.8.0'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:support-annotations:27.0.2'
 }
 
 def siteUrl = "https://github.com/iamMehedi/MVBarcodeReader"
