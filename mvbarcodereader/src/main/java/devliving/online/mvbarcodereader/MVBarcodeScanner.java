@@ -28,11 +28,14 @@ public class MVBarcodeScanner {
     }
 
     public void launchScanner(Activity activity, int requestCode) {
+        activity.startActivityForResult(getScannerIntent(), requestCode);
+    }
+
+    public Intent getScannerIntent() {
         Intent i = new Intent(activity, BarcodeCaptureActivity.class);
         if (mMode != null) i.putExtra(SCANNING_MODE, mMode);
         if (mFormats != null) i.putExtra(BARCODE_FORMATS, mFormats);
-
-        activity.startActivityForResult(i, requestCode);
+        return i;
     }
 
     public static class Builder {
