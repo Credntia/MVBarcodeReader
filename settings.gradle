@@ -1,1 +1,1 @@
-include ':mvbarcodereader'
+include ':app', ':mvbarcodereader'
