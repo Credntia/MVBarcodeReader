@@ -39,6 +39,9 @@ import java.util.List;
 public final class BarcodeCaptureActivity extends AppCompatActivity implements BarcodeCaptureFragment.BarcodeScanningListener {
     private static final String TAG = "Barcode-reader";
 
+    MVBarcodeScanner.ScanningMode mode = null;
+    @MVBarcodeScanner.BarCodeFormat int[] formats = null;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +71,6 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
         setContentView(R.layout.barcode_capture_activity);
 
-        BarcodeCaptureFragment fragment = null;
-        MVBarcodeScanner.ScanningMode mode = null;
-        @MVBarcodeScanner.BarCodeFormat int[] formats = null;
-
         if (getIntent().getExtras() != null) {
             if (getIntent().getExtras().containsKey(MVBarcodeScanner.SCANNING_MODE)) {
                 mode = (MVBarcodeScanner.ScanningMode) getIntent().getExtras().getSerializable(MVBarcodeScanner.SCANNING_MODE);
@@ -83,7 +82,11 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             }
         }
 
-        fragment = BarcodeCaptureFragment.instantiate(mode, formats);
+        addScannerFragment();
+    }
+
+    void addScannerFragment() {
+        BarcodeCaptureFragment fragment = BarcodeCaptureFragment.instantiate(mode, formats);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.container, fragment)
                 .commit();
