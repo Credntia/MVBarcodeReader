@@ -565,7 +565,9 @@ public class BarcodeCaptureFragment extends Fragment implements View.OnTouchList
          */
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
-            mCameraSource.doZoom(detector.getScaleFactor());
+            if(mCameraSource != null){
+                mCameraSource.doZoom(detector.getScaleFactor());
+            }
         }
     }
 

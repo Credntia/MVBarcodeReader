@@ -1,8 +1,10 @@
 package devliving.online.mvbarcodereader;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.IntDef;
+import android.support.v4.app.Fragment;
 
 import com.google.android.gms.vision.barcode.Barcode;
 
@@ -28,11 +30,18 @@ public class MVBarcodeScanner {
     }
 
     public void launchScanner(Activity activity, int requestCode) {
-        Intent i = new Intent(activity, BarcodeCaptureActivity.class);
+        activity.startActivityForResult(getScannerIntent(activity), requestCode);
+    }
+
+    public void launchScanner(Fragment fragment, int requestCode) {
+        fragment.startActivityForResult(getScannerIntent(fragment.getContext()), requestCode);
+    }
+
+    public Intent getScannerIntent(Context context) {
+        Intent i = new Intent(context, BarcodeCaptureActivity.class);
         if (mMode != null) i.putExtra(SCANNING_MODE, mMode);
         if (mFormats != null) i.putExtra(BARCODE_FORMATS, mFormats);
-
-        activity.startActivityForResult(i, requestCode);
+        return i;
     }
 
     public static class Builder {
