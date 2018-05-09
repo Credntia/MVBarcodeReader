@@ -27,5 +27,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-vision:15.0.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:support-annotations:27.1.1'
-    implementation project(':mvbarcodereader')
+
+    implementation 'online.devliving:mvbarcodereader:1.1.6'
+    //implementation project(':mvbarcodereader')
 }
